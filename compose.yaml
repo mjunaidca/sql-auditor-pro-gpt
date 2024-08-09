@@ -1,0 +1,26 @@
+name: sqldb-audit-gpt
+
+services:
+  data-connect-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: DataConnecterCont
+    volumes:
+      - .:/code
+    ports:
+      - "9020:9020"
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    environment:
+      TUNNEL_URL: http://data-connect-service:9020
+    command: "tunnel --no-autoupdate"
+    volumes:
+      - ./cloudflared:/etc/cloudflared
+    depends_on:
+      - data-connect-service
+
+networks:
+  default:
+    driver: bridge
